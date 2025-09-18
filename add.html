@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Add Patient - DocPilot</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<style>
+/* Reset & Body */
+* { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', sans-serif; }
+body { background:#000; color:#fff; min-height:100vh; display:flex; justify-content:center; align-items:center; }
+
+/* Modal */
+.modal {
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  padding:50px 20px;
+  width:100%;
+  min-height:100vh;
+  background: rgba(0,0,0,0.8);
+}
+
+.modal-content {
+  background:#222;
+  border-radius:15px;
+  padding:30px 40px;
+  width:100%;
+  max-width:700px;
+  color:#fff;
+  box-shadow:0 20px 40px rgba(255,255,255,0.1);
+  position:relative;
+}
+
+.close-btn {
+  position:absolute;
+  right:20px;
+  top:20px;
+  font-size:1.8rem;
+  color:#c1e328;
+  cursor:pointer;
+}
+
+/* Form */
+#addPatientForm {
+  display:flex;
+  flex-direction:column;
+  gap:20px;
+}
+
+#addPatientForm label {
+  font-weight:600;
+  font-size:1rem;
+  color:#ccc;
+}
+
+#addPatientForm input[type="text"] {
+  padding:12px 16px;
+  font-size:1rem;
+  border:2px solid #555;
+  border-radius:10px;
+  background:#000;
+  color:#fff;
+  outline:none;
+  transition:border 0.3s ease, box-shadow 0.3s ease;
+}
+
+#addPatientForm input[type="text"]:focus {
+  border-color:#c1e328;
+  box-shadow:0 0 7px #c1e328;
+}
+
+#addPatientForm button {
+  padding:14px 0;
+  border:none;
+  border-radius:12px;
+  background-color:#c1e328;
+  font-size:1.1rem;
+  font-weight:600;
+  cursor:pointer;
+  color:#000;
+  transition:background-color 0.3s ease;
+}
+
+#addPatientForm button:hover {
+  background-color:#9bb633;
+}
+</style>
+</head>
+<body>
+
+<div class="modal">
+  <div class="modal-content">
+    <span class="close-btn" id="closeModal">&times;</span>
+    <h2>Add Patient Data</h2>
+    <hr />
+    <form id="addPatientForm">
+      <label for="patientDetails">Patient Personal Details:</label>
+      <input type="text" id="patientDetails" name="patientDetails" placeholder='{"name":"John Doe", "age":30, "gender":"Male"}' required />
+
+      <label for="conditions">Conditions:</label>
+      <input type="text" id="conditions" name="conditions" placeholder='["Diabetes", "Hypertension"]' required />
+
+      <label for="immunizations">Immunizations:</label>
+      <input type="text" id="immunizations" name="immunizations" placeholder='["Flu vaccine", "Hepatitis B"]' required />
+
+      <label for="medications">Medications:</label>
+      <input type="text" id="medications" name="medications" placeholder='["Metformin", "Amlodipine"]' required />
+
+      <label for="observations">Observations:</label>
+      <input type="text" id="observations" name="observations" placeholder='{"bloodPressure":"120/80", "pulse":72}' required />
+
+      <label for="procedures">Procedures (JSON):</label>
+      <input type="text" id="procedures" name="procedures" placeholder='["Appendectomy", "Colonoscopy"]' required />
+
+      <label for="supplies">Supplies (JSON):</label>
+      <input type="text" id="supplies" name="supplies" placeholder='["Gauze", "Syringe"]' required />
+
+      <label for="carePlans">Care Plans (JSON):</label>
+      <input type="text" id="carePlans" name="carePlans" placeholder='["Regular exercise", "Diet control"]' required />
+
+      <button type="submit" id="submit-btn">Submit</button>
+    </form>
+  </div>
+</div>
+
+<script>
+const modal = document.querySelector('.modal');
+const closeBtn = document.getElementById('closeModal');
+const addPatientForm = document.getElementById('addPatientForm');
+
+// Close modal when clicking X
+closeBtn.addEventListener('click', () => {
+    window.location.href = "hi.html";
+});
+
+// Close modal if click outside modal-content
+window.addEventListener('click', (e) => {
+  const modalContent = document.querySelector('.modal-content');
+  if (e.target === modal) {   // click outside modal-content
+    window.location.href = 'hi.html';
+  }
+});
+
+// Handle form submit
+addPatientForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  try {
+    const patientData = {
+      patientDetails: JSON.parse(addPatientForm.patientDetails.value),
+      conditions: JSON.parse(addPatientForm.conditions.value),
+      immunizations: JSON.parse(addPatientForm.immunizations.value),
+      medications: JSON.parse(addPatientForm.medications.value),
+      observations: JSON.parse(addPatientForm.observations.value),
+      procedures: JSON.parse(addPatientForm.procedures.value),
+      supplies: JSON.parse(addPatientForm.supplies.value),
+      carePlans: JSON.parse(addPatientForm.carePlans.value),
+    };
+    console.log("New patient data:", patientData);
+    alert("Patient data submitted successfully!");
+    window.location.href = "main.html"; // redirect after submit
+  } catch(err) {
+    alert("Invalid JSON format. Please correct and try again.");
+  }
+});
+</script>
+
+
+</body>
+</html>
