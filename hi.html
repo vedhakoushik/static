@@ -1,4 +1,318 @@
-<!DOCTYPE html>
+<!DOCTYPE html><!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DocPilot</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+/* Reset & Body */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #000; color: #fff; min-height: 100vh; display: flex; }
+
+/* Sidebar */
+.sidebar {
+  width: 300px;
+  background: #222;
+  min-height: 100vh;
+  box-shadow: 2px 0 10px rgba(255, 255, 255, 0.1);
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  padding-top: 60px; /* space for toggle button */
+  padding-left: 50px;
+}
+
+#sessionManager {
+  flex: 0 0 auto; /* only takes needed height */
+}
+
+#databaseManager {
+  flex: 0 0 auto; /* only takes needed height */
+  margin-top: 150px; /* adjust this to move it up/down in sidebar */
+}
+
+
+
+/* Each section takes half of the sidebar height */
+.sidebar-section {
+  flex: 1; /* equal height */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.sidebar-section:last-child { border-bottom: none; }
+
+.sidebar-section h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 15px;
+  text-align: center;
+  text-shadow: 0 0 10px rgba(193,227,40,0.5);
+}
+
+.sidebar-section ul { list-style: none; padding: 0; text-align: center; }
+.sidebar-section li { margin-bottom: 10px; }
+.sidebar-section a {
+  display: block;
+  padding: 10px 15px;
+  color: #ccc;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+.sidebar-section a:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+/* Toggle button */
+.toggle-btn {
+  font-size: 1.6rem;
+  color: #fff;
+  cursor: pointer;
+  background: #222;
+  padding: 6px 12px;
+  border-radius: 6px;
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  z-index: 2001;
+}
+
+/* Sidebar collapsed */
+.sidebar.collapsed { transform: translateX(-100%); }
+
+/* Main content */
+.main-content {
+  flex: 1;
+  margin-left: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  min-height: 100vh;
+  color: #fff;
+  transition: margin-left 0.3s ease;
+  width: 100%;
+}
+.sidebar.collapsed ~ .main-content { margin-left: 0; }
+
+/* Responsive */
+@media (max-width: 992px) { .sidebar { width: 220px; } .main-content { margin-left: 220px; } }
+@media (max-width: 750px) { .sidebar { transform: translateX(-100%); } .main-content { margin-left: 0; } }
+@media (max-width: 600px) { .sidebar { width: 100%; } .main-content { margin-left: 0; } .sidebar.collapsed { transform: translateX(-100%); } }
+
+/* Welcome container */
+.welcome-container {
+  background: #222;
+  border-radius: 20px;
+  padding: 50px 40px;
+  box-shadow: 0 20px 40px rgba(255,255,255,0.1);
+  text-align: center;
+  width: 100%;
+  max-width: 600px;
+  position: relative;
+  overflow: hidden;
+}
+.welcome-header { margin-bottom: 60px; opacity: 0; animation: fadeInDown 0.8s ease-out 0.3s forwards; color: #fff; }
+.welcome-heading { font-size: 2.8rem; font-weight: 700; margin-bottom: 10px; }
+.welcome-subtitle { font-size: 1.2rem; color: #ccc; }
+
+/* Search */
+.search-container {
+  position: relative;
+  margin-bottom: 30px;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: slideInUp 0.8s ease-out 0.6s forwards;
+}
+.search-box {
+  width: 100%;
+  padding: 18px 25px;
+  font-size: 1.1rem;
+  border: 2px solid #555;
+  border-radius: 50px;
+  outline: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(255,255,255,0.1);
+  background: #000;
+  color: #fff;
+}
+.search-box:focus { border-color: #c1e328; box-shadow: 0 8px 25px rgba(255,255,255,0.3); }
+.search-box::placeholder { color: #888; }
+
+.search-icon {
+  position: absolute;
+  background-color: #1a1a1a;
+  border: 2px solid #666;
+  border-radius: 50%;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(193,227,40,0.6);
+  font-size: 1.2rem;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+.search-icon:hover { border-color: rgba(193,227,40,0.7); box-shadow: 0 0 8px rgba(193,227,40,0.5); color: rgba(193,227,40,0.8); }
+
+/* Welcome footer */
+.welcome-footer { margin-top: 40px; opacity: 0; animation: fadeIn 1s ease-out 0.9s forwards; color: #ccc; }
+.feature-list { display: flex; justify-content: center; gap: 30px; margin-top: 20px; flex-wrap: wrap; }
+.feature-item { display: flex; align-items: center; gap: 8px; color: #ccc; font-size: 0.95rem; transition: color 0.3s ease; }
+.feature-item:hover { color: #c1e328; }
+.feature-item:hover .feature-icon { color: #c1e328; }
+.feature-icon { color: #fff; font-size: 1rem; }
+
+/* Results */
+.results-container { display: none; margin-top: 40px; padding: 20px; background: #111; border-radius: 12px; box-shadow: 0 8px 25px rgba(255,255,255,0.1); text-align: left; }
+.results-container.active { display: block; animation: fadeIn 0.5s ease-out; }
+
+/* Animations */
+@keyframes fadeInDown { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Decorations */
+.decoration { position: absolute; border-radius: 50%; background: linear-gradient(45deg, rgba(102,126,234,0.1), rgba(118,75,162,0.05)); filter: blur(40px); z-index: -1; }
+.decoration-1 { width: 200px; height: 200px; top: -50px; right: -50px; animation: float 8s ease-in-out infinite; }
+.decoration-2 { width: 150px; height: 150px; bottom: -30px; left: -30px; animation: float 10s ease-in-out infinite reverse; }
+@keyframes float { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-15px) rotate(5deg); } }
+
+</style>
+</head>
+<body>
+
+<!-- Toggle button -->
+<span class="toggle-btn" id="toggleBtn" aria-label="Toggle sidebar"
+      style="background: transparent; border: none; outline: none; width: 130px; height: 130px; 
+             display: flex; align-items: center; justify-content: center; padding: 0; cursor: pointer;">
+  <!-- SVG code here -->
+   <svg width="250" height="250" viewBox="0 0 250 250" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+
+
+<!-- Define a black and white gradient -->
+
+<defs>
+<linearGradient id="bwPulseGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+<stop offset="0%" style="stop-color:#a0a0a0;stop-opacity:1" />
+<stop offset="50%" style="stop-color:#ffffff;stop-opacity:1" />
+<stop offset="100%" style="stop-color:#a0a0a0;stop-opacity:1" />
+</linearGradient>
+</defs>
+
+<!-- Centered logo group -->
+
+<g transform="translate(85, 85)">
+
+<!-- Hexagon outline -->
+<path d="M 50 0 L 25 43.3 L -25 43.3 L -50 0 L -25 -43.3 L 25 -43.3 Z" fill="none" stroke="#ffffff" stroke-width="2.5"/>
+
+<!-- Inner medical reference design with a more professional heartbeat line -->
+<g transform="scale(0.8)">
+  <!-- Pulse line with more defined peaks and valleys for a technical look -->
+  <path d="M-40,0 L-30,0 L-25,-15 L-20,0 L-10,0 L-5,15 L0,0 L5,0 L10,-15 L15,0 L20,0 L25,-5 L30,5 L35,0 L40,0" fill="none" stroke="url(#bwPulseGradient)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+</g>
+
+</g>
+</svg>
+</span>
+
+
+
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-section" id="sessionManager">
+        <h3>Session Manager</h3>
+        <ul>
+            <li><a href="#">New session</a></li>
+        </ul>
+    </div>
+    <div class="sidebar-section" id="databaseManager">
+        <h3>Database Manager</h3>
+        <ul>
+            <li><a href="#">Add patient</a></li>
+        </ul>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="main-content" id="mainContent">
+    <div class="welcome-container">
+        <div class="decoration decoration-1"></div>
+        <div class="decoration decoration-2"></div>
+        <div class="welcome-header">
+            <h1 class="welcome-heading">Doc Pilot</h1>
+            <p class="welcome-subtitle">Access your data and manage your account with ease</p>
+        </div>
+        <div class="search-container">
+            <input type="text" class="search-box" id="searchInput" placeholder="Search clients, projects, or documents...">
+            <div class="search-icon" id="searchButton"><i class="fas fa-search"></i></div>
+        </div>
+        <div class="welcome-footer">
+            <p style="color: #718096; margin-bottom: 15px;">What you can do:</p>
+            <div class="feature-list">
+                <div class="feature-item"><i class="fas fa-check-circle feature-icon"></i><span>Manage patient profiles</span></div>
+                <div class="feature-item"><i class="fas fa-check-circle feature-icon"></i><span>Access resource documents</span></div>
+                <div class="feature-item"><i class="fas fa-check-circle feature-icon"></i><span>Track treatment reports</span></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Sidebar toggle
+const sidebar = document.getElementById('sidebar');
+const toggleBtn = document.getElementById('toggleBtn');
+toggleBtn.addEventListener('click', () => {
+    sidebar.classList.toggle('collapsed');
+});
+
+// Search handling
+const searchInput = document.getElementById('searchInput');
+const searchButton = document.getElementById('searchButton');
+const searchbox = document.getElementsByClassName("search-container")[0];
+const welcomecontainer = document.getElementsByClassName("welcome-container")[0];
+const maincontent = document.getElementsByClassName("main-content")[0];
+const resultsContainer = document.createElement("div");
+resultsContainer.classList.add("results-container");
+resultsContainer.id = "results";
+
+function showResults(query) {
+    welcomecontainer.style.display = "none";
+    maincontent.style.background = "#000";
+    maincontent.innerHTML = "";
+    maincontent.appendChild(resultsContainer);
+    maincontent.appendChild(searchbox);
+    searchbox.style.position = "absolute";
+    searchbox.style.display = "flex";
+    searchbox.style.justifyContent = "center";
+    searchbox.style.bottom = "30px";
+    searchbox.style.transform = "translateX(-50%)";
+    searchbox.style.width = "100%";
+    searchbox.style.maxWidth = "600px";
+    resultsContainer.classList.add("active");
+    resultsContainer.style.width = "43vw";
+    resultsContainer.innerHTML = `<h2>Results</h2><p>Backend says: ${query}</p>`;
+}
+
+searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') showResults(searchInput.value); });
+searchButton.addEventListener('click', () => { showResults(searchInput.value); });
+window.addEventListener('load', () => { searchInput.focus(); });
+</script>
+
+</body>
+</html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -279,3 +593,4 @@ window.addEventListener('load', () => { searchInput.focus(); });
 
 </body>
 </html>
+
