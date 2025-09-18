@@ -227,6 +227,16 @@
             gap: 8px;
             color: #cccccc;
             font-size: 0.95rem;
+            transition: color 0.3s ease;
+            cursor: default; /* optional, but signals it’s interactive */
+        }
+        
+        .feature-item:hover {
+            color: #c1e328; /* lime green on hover */
+        }
+        
+        .feature-item:hover .feature-icon {
+            color: #c1e328; /* make icon color same as text on hover */
         }
 
         .feature-icon {
